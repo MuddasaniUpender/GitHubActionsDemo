@@ -1,0 +1,157 @@
+apiVersion: crd.k8s.appian.com/v1alpha1
+kind: Appian
+metadata:
+# Temporary licenses: name can be any lower case name, one word  
+# Long-term licenses: name must match the requested Appian site name for the license
+  name: appian-k8s-appn
+
+spec:
+  webapp:
+    image:
+      repository: registry.example.com/appian/webapp
+      tag: 21.2.360.0
+    replicas: 1
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 4Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+    volumeClaimTemplateSpec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "5Gi"
+    # The scheme, host, and, optionally, port of the site 
+    # See Post-Install_Configurations.html#configure-your-site-url
+    url: http://myappiansite.com
+        
+    # The scheme, host, and, optionally, port of the site's static and dynamic content URLs 
+    # See Post-Install_Configurations.html#configure-your-static-and-dynamic-content-urls
+    # staticUrl: http://myappiansite-static.com
+    # dynamicUrl: http://myappiansite-dynamic.com
+
+    dataSources:
+      # Connection information for the relational database to use as the
+      # Appian/primary data source. If connecting to MySQL or IBM Db2, use an
+      # init container to add the appropriate RDBMS/JDBC driver JAR to Tomcat's classpath
+      # See Configuring_Relational_Databases.html#provide-data-source-connection-information
+      primary:
+        name: jdbc/AppianPrimaryDS
+        driverClassName: org.mariadb.jdbc.Driver
+        url: "jdbc:mariadb://mariadb-appian.my-appian-site.svc.cluster.local:3306/appian-k8s-appn?useOldAliasMetadataBehavior=true"
+        username: appian-k8s-appn
+        password: appian-k8s-appn
+        validationQuery: "SELECT 1"
+
+
+  # Key-value pairs to inject into the custom.properties file shared by all components
+  # See Custom_Configurations.md#custom-properties
+  customProperties: {}
+    # my.custom.key: my-custom-value
+
+  zookeeper:
+    image:
+      repository: registry.example.com/appian/zookeeper
+      tag: 3.7.0-prod-939f6a88
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    volumeClaimTemplateSpec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "5Gi"
+
+  kafka:
+    image:
+      repository: registry.example.com/appian/kafka
+      tag: 2.13-2.7.0-appian-4-prod-8d0de3b2
+    replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+    volumeClaimTemplateSpec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "5Gi"
+
+  searchServer:
+    image:
+      repository: registry.example.com/appian/search-server
+      tag: 0.213.1
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1.25Gi
+      limits:
+        cpu: 1000m
+        memory: 1.25Gi
+    volumeClaimTemplateSpec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "5Gi"
+
+  dataServer:
+    image:
+      repository: registry.example.com/appian/data-server
+      tag: 0.215.2
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+    volumeClaimTemplateSpec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "5Gi"
+
+  serviceManager:
+    image:
+      repository: registry.example.com/appian/service-manager
+      tag: 21.2.360.0
+    replicas: 1
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 4Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+    volumeClaimTemplateSpec:
+      accessModes:
+        - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "5Gi"
+
+  httpd:
+    image:
+      repository: registry.example.com/appian/httpd
+      tag: 21.2.360.0
+    replicas: 1
+
+  ingress:
+    enabled: true
